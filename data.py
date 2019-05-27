@@ -87,7 +87,7 @@ class Dataset(object):
     def __next__(self):
         try:
             b = self.get_next()
-        except:
+        except Exception:
             raise StopIteration
         else:
             return b
@@ -121,7 +121,7 @@ class Dataset(object):
 
         try:
             self.reset()
-        except:
+        except Exception:
             pass
 
     @property
@@ -252,7 +252,8 @@ class Celeba(Dataset):
 
 if __name__ == '__main__':
     import imlib as im
-    atts = ['Bald', 'Bangs', 'Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Bushy_Eyebrows', 'Eyeglasses', 'Male', 'Mouth_Slightly_Open', 'Mustache', 'No_Beard', 'Pale_Skin', 'Young']
+    atts = ['Bald', 'Bangs', 'Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Bushy_Eyebrows', 'Eyeglasses', 'Male',
+            'Mouth_Slightly_Open', 'Mustache', 'No_Beard', 'Pale_Skin', 'Young']
     data = Celeba('./data', atts, 128, 32, part='val')
     batch = data.get_next()
     print(len(data))

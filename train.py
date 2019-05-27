@@ -25,8 +25,10 @@ import models
 
 parser = argparse.ArgumentParser()
 # model
-att_default = ['Bald', 'Bangs', 'Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Bushy_Eyebrows', 'Eyeglasses', 'Male', 'Mouth_Slightly_Open', 'Mustache', 'No_Beard', 'Pale_Skin', 'Young']
-parser.add_argument('--atts', dest='atts', default=att_default, choices=data.Celeba.att_dict.keys(), nargs='+', help='attributes to learn')
+att_default = ['Bald', 'Bangs', 'Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Bushy_Eyebrows', 'Eyeglasses',
+               'Male', 'Mouth_Slightly_Open', 'Mustache', 'No_Beard', 'Pale_Skin', 'Young']
+parser.add_argument('--atts', dest='atts', default=att_default, choices=data.Celeba.att_dict.keys(),
+                    nargs='+', help='attributes to learn')
 parser.add_argument('--img_size', dest='img_size', type=int, default=128)
 parser.add_argument('--shortcut_layers', dest='shortcut_layers', type=int, default=1)
 parser.add_argument('--inject_layers', dest='inject_layers', type=int, default=0)
@@ -43,13 +45,15 @@ parser.add_argument('--epoch', dest='epoch', type=int, default=200, help='# of e
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=32)
 parser.add_argument('--lr', dest='lr', type=float, default=0.0002, help='learning rate')
 parser.add_argument('--n_d', dest='n_d', type=int, default=5, help='# of d updates per g update')
-parser.add_argument('--b_distribution', dest='b_distribution', default='none', choices=['none', 'uniform', 'truncated_normal'])
+parser.add_argument('--b_distribution', dest='b_distribution', default='none',
+                    choices=['none', 'uniform', 'truncated_normal'])
 parser.add_argument('--thres_int', dest='thres_int', type=float, default=0.5)
 parser.add_argument('--test_int', dest='test_int', type=float, default=1.0)
 parser.add_argument('--n_sample', dest='n_sample', type=int, default=64, help='# of sample images')
 # others
 parser.add_argument('--use_cropped_img', dest='use_cropped_img', action='store_true')
-parser.add_argument('--experiment_name', dest='experiment_name', default=datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"))
+parser.add_argument('--experiment_name', dest='experiment_name',
+                    default=datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"))
 
 args = parser.parse_args()
 # model
@@ -90,12 +94,15 @@ with open('./output/%s/setting.txt' % experiment_name, 'w') as f:
 
 # data
 sess = tl.session()
-tr_data = data.Celeba('./data', atts, img_size, batch_size, part='train', sess=sess, crop=not use_cropped_img)
-val_data = data.Celeba('./data', atts, img_size, n_sample, part='val', shuffle=False, sess=sess, crop=not use_cropped_img)
+tr_data = data.Celeba('./data', atts, img_size, batch_size, part='train',
+                      sess=sess, crop=not use_cropped_img)
+val_data = data.Celeba('./data', atts, img_size, n_sample, part='val',
+                       shuffle=False, sess=sess, crop=not use_cropped_img)
 
 # models
 Genc = partial(models.Genc, dim=enc_dim, n_layers=enc_layers)
-Gdec = partial(models.Gdec, dim=dec_dim, n_layers=dec_layers, shortcut_layers=shortcut_layers, inject_layers=inject_layers)
+Gdec = partial(models.Gdec, dim=dec_dim, n_layers=dec_layers, shortcut_layers=shortcut_layers,
+               inject_layers=inject_layers)
 D = partial(models.D, n_att=n_att, dim=dis_dim, fc_dim=dis_fc_dim, n_layers=dis_layers)
 
 # inputs
@@ -204,7 +211,7 @@ ckpt_dir = './output/%s/checkpoints' % experiment_name
 pylib.mkdir(ckpt_dir)
 try:
     tl.load_checkpoint(ckpt_dir, sess)
-except:
+except Exception:
     sess.run(tf.global_variables_initializer())
 
 # train
@@ -246,7 +253,8 @@ try:
 
             # save
             if (it + 1) % 1000 == 0:
-                save_path = saver.save(sess, '%s/Epoch_(%d)_(%dof%d).ckpt' % (ckpt_dir, epoch, it_in_epoch, it_per_epoch))
+                save_path = saver.save(sess, '%s/Epoch_(%d)_(%dof%d).ckpt'
+                                       % (ckpt_dir, epoch, it_in_epoch, it_per_epoch))
                 print('Model is saved at %s!' % save_path)
 
             # sample
@@ -256,13 +264,15 @@ try:
                     _b_sample_ipt = (b_sample_ipt * 2 - 1) * thres_int
                     if i > 0:   # i == 0 is for reconstruction
                         _b_sample_ipt[..., i - 1] = _b_sample_ipt[..., i - 1] * test_int / thres_int
-                    x_sample_opt_list.append(sess.run(x_sample, feed_dict={xa_sample: xa_sample_ipt, _b_sample: _b_sample_ipt}))
+                    x_sample_opt_list.append(sess.run(x_sample,
+                                             feed_dict={xa_sample: xa_sample_ipt, _b_sample: _b_sample_ipt}))
                 sample = np.concatenate(x_sample_opt_list, 2)
 
                 save_dir = './output/%s/sample_training' % experiment_name
                 pylib.mkdir(save_dir)
-                im.imwrite(im.immerge(sample, n_sample, 1), '%s/Epoch_(%d)_(%dof%d).jpg' % (save_dir, epoch, it_in_epoch, it_per_epoch))
-except:
+                im.imwrite(im.immerge(sample, n_sample, 1), '%s/Epoch_(%d)_(%dof%d).jpg'
+                           % (save_dir, epoch, it_in_epoch, it_per_epoch))
+except Exception:
     traceback.print_exc()
 finally:
     save_path = saver.save(sess, '%s/Epoch_(%d)_(%dof%d).ckpt' % (ckpt_dir, epoch, it_in_epoch, it_per_epoch))

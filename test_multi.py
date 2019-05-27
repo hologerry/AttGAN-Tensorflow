@@ -68,7 +68,8 @@ te_data = data.Celeba('./data', atts, img_size, 1, part='test', sess=sess, crop=
 
 # models
 Genc = partial(models.Genc, dim=enc_dim, n_layers=enc_layers)
-Gdec = partial(models.Gdec, dim=dec_dim, n_layers=dec_layers, shortcut_layers=shortcut_layers, inject_layers=inject_layers)
+Gdec = partial(models.Gdec, dim=dec_dim, n_layers=dec_layers, shortcut_layers=shortcut_layers,
+               inject_layers=inject_layers)
 
 # inputs
 xa_sample = tf.placeholder(tf.float32, shape=[None, img_size, img_size, 3])
@@ -86,7 +87,7 @@ x_sample = Gdec(Genc(xa_sample, is_training=False), _b_sample, is_training=False
 ckpt_dir = './output/%s/checkpoints' % experiment_name
 try:
     tl.load_checkpoint(ckpt_dir, sess)
-except:
+except Exception:
     raise Exception(' [*] No checkpoint!')
 
 # sample
@@ -113,7 +114,7 @@ try:
 
         print('%d.png done!' % (idx + 182638))
 
-except:
+except Exception:
     traceback.print_exc()
 finally:
     sess.close()
